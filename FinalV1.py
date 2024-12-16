@@ -120,6 +120,17 @@ def detect_stickers_and_draw_lines():
                 cv2.putText(frame, f"{int(angle_cintura)}°", centers['CINTURA'], cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
                 print(f"Ángulo entre HOMBRO, CINTURA y TOBILLO: {int(angle_cintura)}°")
                 angles.append(angle_cintura)
+        
+        # Dibuja líneas y calcula ángulos para CODO, HOMBRO, CINTURA
+        if all(part in centers for part in ['CODO', 'HOMBRO', 'CINTURA']):
+            cv2.line(frame, centers['CODO'], centers['HOMBRO'], (0, 255, 255), 2)
+            cv2.line(frame, centers['HOMBRO'], centers['CINTURA'], (0, 255, 255), 2)
+            angle_cintura = calcular_angulos(centers['CODO'], centers['HOMBRO'], centers['CINTURA'])
+            if angle_cintura is not None:
+                cv2.putText(frame, f"{int(angle_cintura)}°", centers['CINTURA'], cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
+                print(f"Ángulo entre CODO, HOMBRO y Cintyra: {int(angle_cintura)}°")
+                angles.append(angle_cintura)
+
 
         # Llama a la función de umbrales correspondiente según el ejercicio seleccionado si se ha presionado 's'
         if start_repetitions:
@@ -168,6 +179,7 @@ def get_exercise_choice():
         print("Opción no válida. Seleccionando Push-up por defecto.")
         selected_exercise = "Push-up"
 
+#----------------------LOgica de Umbrales --------------------------------------
 # Funciones de umbrales para diferentes ejercicios
 def pushup_umbrales(angulos):
     global repetition_count, repetition_status
