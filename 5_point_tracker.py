@@ -9,9 +9,9 @@ def detect_stickers_and_draw_lines():
     color_ranges = {
         'MUÑECA': ([90, 51, 70], [128, 255, 255]),    # Azul
         'CODO': ([129, 50, 70], [158, 255, 255]),     # Morado
-        'HOMBRO': ([36, 166, 165], [96, 255, 255]),     # Verde
-        'CINTURA': ([0, 166, 165], [179, 255, 255]),  # Rojo
-        'TOBILLO': ([12, 145, 70], [50, 255, 255])    # Amarillo
+        'HOMBRO': ([42, 47, 159], [50, 155, 200]),     # Verde
+        'CINTURA': ([0, 155, 143], [0, 199, 255]),  # Rojo
+        'TOBILLO': ([24, 145, 70], [36, 255, 255])    # Amarillo
     }
 
     # Orden de conexión entre puntos

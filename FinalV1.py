@@ -1,6 +1,8 @@
 import cv2
 import numpy as np
 import time
+import os
+os.environ['QT_MAC_WANTS_LAYER'] = '1'
 
 # Variables globales para almacenar el ejercicio seleccionado y el conteo de repeticiones
 selected_exercise = None
@@ -46,20 +48,20 @@ def detect_stickers_and_draw_lines():
 
     # Rango de colores para las pegatinas
     color_ranges = {
-        'MUÑECA': ([90, 51, 70], [128, 255, 255]),    # Azul
+        'MUÑECa/RODILLA': ([90, 51, 70], [128, 255, 255]),    # Azul
         'CODO': ([129, 50, 70], [158, 255, 255]),     # Morado
-        'HOMBRO': ([36, 166, 165], [96, 255, 255]),     # Verde
-        'CINTURA': ([0, 166, 165], [179, 255, 255]),  # Rojo
-        'TOBILLO': ([12, 145, 70], [50, 255, 255])    # Amarillo
+        'HOMBRO': ([42, 47, 159], [50, 155, 200]),     # Verde
+        'CINTURA': ([0, 163, 4], [0, 255, 255]),  # Rojo
+        'TOBILLO': ([24, 145, 70], [36, 255, 255])    #s Amarillo
     }
 
     # Colores para los centros
     articulation_colors = {
         'MUÑECA': (255, 0, 0),    # Azul
-        'CODO': (255, 0, 255),    # Morado
+        'CODO': (0, 0, 0),    # Morado
         'HOMBRO': (0, 255, 0),    # Verde
         'CINTURA': (0, 0, 255),   # Rojo
-        'TOBILLO': (0, 255, 255)  # Amarillo
+        'TOBILLO': (0, 0, 0)  # Amarillo
     }
 
     print("\nPresiona 'q' para salir del programa.\n")
@@ -97,28 +99,30 @@ def detect_stickers_and_draw_lines():
                     cy = y + h // 2
                    
                     cv2.circle(frame, (cx, cy), 8, articulation_colors[body_part], -1)
+                    text = f"{body_part} ({cx}, {cy})"
+                    cv2.putText(frame, text, (cx - 20, cy - 20), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 255), 2)
                     centers[body_part] = (cx, cy)
                     cv2.drawContours(frame, [cnt], -1, (0, 255, 255), 2)
            
         # Dibuja líneas y calcula ángulos para MUÑECA, CODO, HOMBRO
         angles = []
-        if all(part in centers for part in ['MUÑECA', 'CODO', 'HOMBRO']):
+        if all(part in centers for part in ['MUÑECA', 'CODO', 'HOMBRO']): # En squat seria Hombro , cintura rodilla
             cv2.line(frame, centers['MUÑECA'], centers['CODO'], (255, 128, 0), 2)
             cv2.line(frame, centers['CODO'], centers['HOMBRO'], (255, 128, 0), 2)
             angle_codo = calcular_angulos(centers['MUÑECA'], centers['CODO'], centers['HOMBRO'])
             if angle_codo is not None:
                 cv2.putText(frame, f"{int(angle_codo)}°", centers['CODO'], cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
-                print(f"Ángulo entre MUÑECA, CODO y HOMBRO: {int(angle_codo)}°")
+                #print(f"Ángulo entre MUÑECA, CODO y HOMBRO: {int(angle_codo)}°")
                 angles.append(angle_codo)
 
         # Dibuja líneas y calcula ángulos para HOMBRO, CINTURA, TOBILLO
-        if all(part in centers for part in ['HOMBRO', 'CINTURA', 'TOBILLO']):
+        if all(part in centers for part in ['HOMBRO', 'CINTURA', 'TOBILLO']): # En squat seria Hombro , cintura rodilla
             cv2.line(frame, centers['HOMBRO'], centers['CINTURA'], (0, 255, 255), 2)
             cv2.line(frame, centers['CINTURA'], centers['TOBILLO'], (0, 255, 255), 2)
             angle_cintura = calcular_angulos(centers['HOMBRO'], centers['CINTURA'], centers['TOBILLO'])
             if angle_cintura is not None:
                 cv2.putText(frame, f"{int(angle_cintura)}°", centers['CINTURA'], cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
-                print(f"Ángulo entre HOMBRO, CINTURA y TOBILLO: {int(angle_cintura)}°")
+                #print(f"Ángulo entre HOMBRO, CINTURA y TOBILLO: {int(angle_cintura)}°")
                 angles.append(angle_cintura)
         
         # Dibuja líneas y calcula ángulos para CODO, HOMBRO, CINTURA
@@ -128,7 +132,7 @@ def detect_stickers_and_draw_lines():
             angle_cintura = calcular_angulos(centers['CODO'], centers['HOMBRO'], centers['CINTURA'])
             if angle_cintura is not None:
                 cv2.putText(frame, f"{int(angle_cintura)}°", centers['CINTURA'], cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
-                print(f"Ángulo entre CODO, HOMBRO y Cintyra: {int(angle_cintura)}°")
+                #1print(f"Ángulo entre CODO, HOMBRO y Cintyra: {int(angle_cintura)}°")
                 angles.append(angle_cintura)
 
 
@@ -183,11 +187,12 @@ def get_exercise_choice():
 # Funciones de umbrales para diferentes ejercicios
 def pushup_umbrales(angulos):
     global repetition_count, repetition_status
-    goi_puntu = [175.0, 80.0, 175.0]
-    behe_puntu = [30.0, 30.0, 175.0]
+    goi_puntu = [170.0, 60.0, 170.0]
+    behe_puntu = [40.0, 40.0, 1701.0]
     goi, behe = True, False
 
     if len(angulos) > 2:
+        
         while goi or behe:
             while goi:
                 if (angulos[0] is not None and angulos[1] is not None and angulos[2] is not None
