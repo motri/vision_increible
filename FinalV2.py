@@ -23,8 +23,9 @@ def calcular_angulos(a, b, c):
 # Función para registrar estadísticas en un archivo
 def log_repetition(exercise_name):
     timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
-    with open("repetition_stats.txt", "a") as file:
-        file.write(f"{timestamp} - {exercise_name}: Repetición completada correctamente\n")
+    with open("repetition_stats.txt", "a", buffering=1) as file:
+        file.write(f"{timestamp} - {exercise_name}: Repetition completed correctly\n")
+
 
 # Función para mostrar el menú en pantalla
 def draw_menu(frame, articulation_colors):
@@ -39,7 +40,7 @@ def draw_menu(frame, articulation_colors):
 def detect_stickers_and_draw_lines():
     global selected_exercise, repetition_count, repetition_status, start_repetitions
 
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(0, cv2.CAP_AVFOUNDATION)
     if not cap.isOpened():
         print("Error: No se pudo acceder a la cámara.")
         return
@@ -160,7 +161,7 @@ def detect_stickers_and_draw_lines():
         cv2.imshow("Frame", frame)
 
         # Verifica si se presionan teclas
-        key = cv2.waitKey(1) & 0xFF
+        key = cv2.waitKey(30) & 0xFF
         if key == ord('q'):
             print("\nSaliendo del programa...\n")
             break
@@ -270,6 +271,6 @@ def deadlift_umbrales(angulos):
                     log_repetition("Deadlift")
 
 # Ejecuta la función
-if __name__ == "__main__":
+if __name__ == "__main__": 
     get_exercise_choice()
     detect_stickers_and_draw_lines()
