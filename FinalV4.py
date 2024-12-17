@@ -136,7 +136,7 @@ def detect_stickers_and_draw_lines():
         if len(angles_dict) == len(exercise_angles[selected_exercise]):
             # Convierte el diccionario de ángulos en una lista ordenada
             angles = [angles_dict[i] for i in sorted(angles_dict.keys())]
-
+            print("TODOS LOS ANGULOS DETECTADOS")
             # Llama a la función de umbrales correspondiente según el ejercicio seleccionado
             if selected_exercise == "Push-up":
                 pushup_umbrales(angles)
@@ -144,6 +144,8 @@ def detect_stickers_and_draw_lines():
                 squat_umbrales(angles)
             elif selected_exercise == "Deadlift":
                 deadlift_umbrales(angles)
+        else:
+            cv2.putText(frame, "Esperando a que se detecten todos los angulos", (10, 400), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
 
         # Muestra el conteo de repeticiones y el estado
         cv2.putText(frame, f"Repeticiones: {repetition_count}", (10, 420), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2)
