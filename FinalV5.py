@@ -39,24 +39,24 @@ def draw_menu(frame, articulation_colors):
 def detect_stickers_and_draw_lines():
     global selected_exercise, repetition_count, repetition_status
 
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(1)
     if not cap.isOpened():
         print("Error: No se pudo acceder a la cámara.")
         return
 
     # Rango de colores para las pegatinas
     color_ranges = {
-        'MUÑECA/RODILLA': ([90, 51, 70], [128, 255, 255]),    # Azul
-        'CODO': ([129, 50, 70], [158, 255, 255]),     # Morado
-        'HOMBRO': ([42, 47, 159], [50, 155, 200]),     # Verde
-        'CINTURA': ([0, 163, 4], [0, 255, 255]),  # Rojo
-        'TOBILLO': ([24, 145, 70], [36, 255, 255])    # Amarillo
+        'CODO/RODILLA': ([91, 87, 144], [124, 153, 250]),    # Azul
+        'MUÑECA': ([112, 54, 114], [129, 177, 255]),     # Morado
+        'HOMBRO': ([35, 118, 139], [45, 160, 203]),     # Verde
+        'CINTURA': ([0, 141, 92], [17, 179, 255]),  # Rojo
+        'TOBILLO': ([0, 193, 151], [39, 255, 199])    # Amarillo
     }
 
     # Colores para los centros
     articulation_colors = {
-        'MUÑECA/RODILLA': (255, 0, 0),    # Azul
-        'CODO': (255, 0, 255),    # Morado
+        'CODO/RODILLA': (255, 0, 0),    # Azul
+        'MUÑECA': (255, 0, 255),    # Morado
         'HOMBRO': (0, 255, 0),    # Verde
         'CINTURA': (0, 0, 255),   # Rojo
         'TOBILLO': (0, 255, 255)  # Amarillo
@@ -65,17 +65,17 @@ def detect_stickers_and_draw_lines():
     # Configuraciones de ángulos para cada ejercicio
     exercise_angles = {
         "Push-up": [
-            ['HOMBRO', 'CINTURA', 'TOBILLO'], # ángulo 1
-            ['HOMBRO', 'CODO', 'CINTURA'],    # ángulo 2
-            ['HOMBRO', 'CODO', 'MUÑECA/RODILLA'] # ángulo 3
+            ['TOBILLO', 'CINTURA', 'HOMBRO'], # ángulo 1 alpha 
+            ['CINTURA', 'HOMBRO', 'CODO/RODILLA'],    # ángulo 2 beta  No hace falta compribarlo
+            ['HOMBRO', 'CODO/RODILLA', 'MUÑECA'] # ángulo 3 omega 
         ],
         "Squat": [
-            ['CINTURA', 'MUÑECA/RODILLA', 'TOBILLO'], # ángulo 1
-            ['HOMBRO', 'MUÑECA/RODILLA', 'CINTURA']   # ángulo 2
+            ['TOBILLO', 'CODO/RODILLA', 'CINTURA'], # ángulo 1 alpha 
+            [ 'CODO/RODILLA','CINTURA', 'HOMBRO']   # ángulo 2 Beta 
         ],
         "Deadlift": [
-            ['CINTURA', 'MUÑECA/RODILLA', 'TOBILLO'], # ángulo 1
-            ['HOMBRO', 'CINTURA', 'MUÑECA/RODILLA']   # ángulo 2
+            ['TOBILLO', 'CODO/RODILLA', 'CINTURA'], # ángulo 1 alpha 
+            [ 'CODO/RODILLA','CINTURA', 'HOMBRO']  # ángulo 2 Beta 
         ]
     }
 
@@ -87,7 +87,8 @@ def detect_stickers_and_draw_lines():
         if not ret:
             print("Error: No se puede leer el frame.")
             break
-
+        goi=True
+        behe=False
         # Redimensiona el frame y lo convierte a HSV
         frame = cv2.resize(frame, (640, 480))
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
@@ -139,13 +140,13 @@ def detect_stickers_and_draw_lines():
             print("TODOS LOS ANGULOS DETECTADOS")
             # Llama a la función de umbrales correspondiente según el ejercicio seleccionado
             if selected_exercise == "Push-up":
-                pushup_umbrales(angles)
+                goi,behe= pushup_umbrales(angles,goi,behe)
             elif selected_exercise == "Squat":
-                squat_umbrales(angles)
+                goi,behe=squat_umbrales(angles,goi,behe)
             elif selected_exercise == "Deadlift":
-                deadlift_umbrales(angles)
+                goi,behe=deadlift_umbrales(angles,goi,behe)
         else:
-            cv2.putText(frame, "Esperando a que se detecten todos los angulos", (10, 400), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+            print('Esperando  todos los angulos ')
 
         # Muestra el conteo de repeticiones y el estado
         cv2.putText(frame, f"Repeticiones: {repetition_count}", (10, 420), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2)
@@ -182,24 +183,22 @@ def get_exercise_choice():
         selected_exercise = "Push-up"
 
 # Funciones de umbrales para diferentes ejercicios
-def pushup_umbrales(angulos):
+def pushup_umbrales(angulos,goi,behe):
     global repetition_count, repetition_status
-    goi_puntu = [170.0, 60.0, 170.0]
-    behe_puntu = [40.0, 40.0, 170.0]
-    goi, behe = True, False
+    goi_puntu = [170.0, 60.0, 140.0]
+    behe_puntu = [40.0, 30.0, 70.0]
+    
 
     if len(angulos) > 2:
         while goi or behe:
             while goi:
                 if (angulos[0] is not None and angulos[1] is not None and angulos[2] is not None
-                        and angulos[0] < behe_puntu[0]
                         and angulos[1] < behe_puntu[1]
                         and angulos[2] < behe_puntu[2]):
                     behe = True
                     goi = False
             while behe:
                 if (angulos[0] is not None and angulos[1] is not None and angulos[2] is not None
-                        and angulos[0] > goi_puntu[0]
                         and angulos[1] > goi_puntu[1]
                         and angulos[2] > goi_puntu[2]):
                     goi = True
@@ -208,58 +207,60 @@ def pushup_umbrales(angulos):
                     repetition_status = "Repetición bien hecha"
                     print("Se ha completado una repetición correctamente")
                     log_repetition("Push-up")
+    return goi, behe
 
-def squat_umbrales(angulos):
+def squat_umbrales(angulos,goi,behe):
     global repetition_count, repetition_status
-    goi_puntu = [175.0, 175.0]
-    behe_puntu = [90.0, 90.0]
-    goi, behe = True, False
+    goi_puntu = [150.0, 150.0]
+    behe_puntu = [110.0, 110.0]
+    
+
+    if len(angulos) > 1:
+        if behe:
+            if (angulos[0] is not None and angulos[1] is not None
+                    and angulos[0] < behe_puntu[0]
+                    and angulos[1] < behe_puntu[1]):
+                print("Estas arriba")
+                goi = True
+                behe = False
+        if goi:    
+            if (angulos[0] is not None and angulos[1] is not None
+                    and angulos[0] > goi_puntu[0]
+                    and angulos[1] > goi_puntu[1]):
+                repetition_count += 1
+                repetition_status = "Repetición bien hecha"
+                print("Se ha completado una repetición correctamente")
+                log_repetition("Squat")
+                goi = False
+                behe = True
+    
+    return goi, behe
+
+def deadlift_umbrales(angulos,goi,behe):
+    global repetition_count, repetition_status
+    goi_puntu = [150.0, 150.0]
+    behe_puntu = [100.0, 90.0]
+   
 
     if len(angulos) > 1:
         while goi or behe:
             while goi:
-                if (angulos[0] is not None and angulos[1] is not None
+                if (angulos[0] is not None and angulos[1] is not None 
                         and angulos[0] < behe_puntu[0]
                         and angulos[1] < behe_puntu[1]):
                     behe = True
                     goi = False
             while behe:
-                if (angulos[0] is not None and angulos[1] is not None
+                if (angulos[0] is not None and angulos[1] is not None 
                         and angulos[0] > goi_puntu[0]
-                        and angulos[1] > goi_puntu[1]):
-                    goi = True
-                    behe = False
-                    repetition_count += 1
-                    repetition_status = "Repetición bien hecha"
-                    print("Se ha completado una repetición correctamente")
-                    log_repetition("Squat")
-
-def deadlift_umbrales(angulos):
-    global repetition_count, repetition_status
-    goi_puntu = [175.0, 175.0, 0.0]
-    behe_puntu = [130.0, 40.0, 20.0]
-    goi, behe = True, False
-
-    if len(angulos) > 2:
-        while goi or behe:
-            while goi:
-                if (angulos[0] is not None and angulos[1] is not None and angulos[2] is not None
-                        and angulos[0] < behe_puntu[0]
-                        and angulos[1] < behe_puntu[1]
-                        and angulos[2] < behe_puntu[2]):
-                    behe = True
-                    goi = False
-            while behe:
-                if (angulos[0] is not None and angulos[1] is not None and angulos[2] is not None
-                        and angulos[0] > goi_puntu[0]
-                        and angulos[1] > goi_puntu[1]
-                        and angulos[2] > goi_puntu[2]):
+                        and angulos[1] > goi_puntu[1] ):
                     goi = True
                     behe = False
                     repetition_count += 1
                     repetition_status = "Repetición bien hecha"
                     print("Se ha completado una repetición correctamente")
                     log_repetition("Deadlift")
+    return goi, behe
 
 # Ejecuta la función principal
 if __name__ == "__main__":
