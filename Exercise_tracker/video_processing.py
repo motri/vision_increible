@@ -5,7 +5,7 @@ from PIL import Image, ImageTk
 import tkinter as tk
 from joint_detection import JointDetector
 from audio_feedback import AudioFeedback
-from rep_counter import RepCounter
+from rep_counter_relative import RepCounterRelative
 from posture_checker import PostureChecker
 
 class VideoProcessor:
@@ -15,7 +15,7 @@ class VideoProcessor:
         self.frame_buffer = None
         self.joint_detector = JointDetector()
         self.audio_feedback = AudioFeedback()
-        self.rep_counter = RepCounter(self.audio_feedback)
+        self.rep_counter = RepCounterRelative(self.audio_feedback)
         self.posture_checker = PostureChecker(self.audio_feedback)
         self.selected_exercise = None
         self.start_tracking = False
@@ -69,7 +69,7 @@ class VideoProcessor:
         if self.selected_exercise == "Push-up":
             connections = [("ankle", "hip"), ("hip", "shoulder"), ("shoulder", "elbow")]
         else:
-            connections = [("knee", "hip"), ("hip", "shoulder")]
+            connections = [("knee", "hip"), ("hip", "shoulder"),("ankle", "knee") ]
 
         for j1, j2 in connections:
             if j1 in joints and j2 in joints:
@@ -83,7 +83,7 @@ class VideoProcessor:
         # Repetition detection logic using angles
         if self.start_tracking:
             rep_count = self.rep_counter.count_reps(self.selected_exercise, joints)
-            self.posture_checker.check_posture(self.selected_exercise, joints)
+            #self.posture_checker.check_posture(self.selected_exercise, joints)
 
         # Display rep count
         cv2.putText(frame, f"Reps: {rep_count}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)

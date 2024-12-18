@@ -7,11 +7,11 @@ class RepCounter:
         self.at_bottom = False
 
     def count_reps(self, exercise, joints):
-        if exercise == "Squat" and "knee" in joints and "hip" in joints and "shoulder" in joints:
-            angle = calculate_angle(joints["knee"], joints["hip"], joints["shoulder"])
+        if exercise == "Squat" and "knee" in joints and "hip" in joints and "ankle" in joints:
+            angle = calculate_angle(joints["ankle"], joints["knee"], joints["hip"] )
 
             # Bottom position detected (angle less than 90 degrees)
-            if angle < 90 and not self.at_bottom:
+            if angle < 110 and not self.at_bottom:
                 self.at_bottom = True
 
             # Top position detected (angle greater than 160 degrees)

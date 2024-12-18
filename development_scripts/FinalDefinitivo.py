@@ -26,7 +26,7 @@ class ExerciseApp:
 
         # Initialize pygame mixer for audio
         pygame.mixer.init()
-        self.ping_sound = "msg\ping.mp3"
+        self.ping_sound = "development_scripts/msg/ping.mp3"
 
         self.color_ranges = {
             'ankle': ([24, 145, 70], [36, 255, 255]),        # Yellow
@@ -79,7 +79,7 @@ class ExerciseApp:
 
     def video_feed(self):
         """Capture video and process frames."""
-        self.cap = cv2.VideoCapture(1)
+        self.cap = cv2.VideoCapture(0)
         if not self.cap.isOpened():
             print("Error: Camera not initialized.")
             return
