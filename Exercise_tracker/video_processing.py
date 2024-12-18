@@ -69,7 +69,7 @@ class VideoProcessor:
         if self.selected_exercise == "Push-up":
             connections = [("ankle", "hip"), ("hip", "shoulder"), ("shoulder", "elbow")]
         else:
-            connections = [("knee", "hip"), ("hip", "shoulder"),("ankle", "hip") ]
+            connections = [("knee", "hip"), ("hip", "shoulder")]
 
         for j1, j2 in connections:
             if j1 in joints and j2 in joints:
@@ -80,10 +80,10 @@ class VideoProcessor:
         # Initialize rep_count
         rep_count = 0
 
-        # Repetition detection logic using angles
+        # Repetition detection logic using relative heights
         if self.start_tracking:
             rep_count = self.rep_counter.count_reps(self.selected_exercise, joints)
-            #self.posture_checker.check_posture(self.selected_exercise, joints)
+            self.posture_checker.check_posture(self.selected_exercise, joints)
 
         # Display rep count
         cv2.putText(frame, f"Reps: {rep_count}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
