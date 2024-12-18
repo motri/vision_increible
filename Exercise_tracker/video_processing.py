@@ -5,7 +5,7 @@ from PIL import Image, ImageTk
 import tkinter as tk
 from joint_detection import JointDetector
 from audio_feedback import AudioFeedback
-from rep_counter_relative import RepCounterRelative
+from rep_counter import RepCounter
 from posture_checker import PostureChecker
 
 class VideoProcessor:
@@ -15,7 +15,7 @@ class VideoProcessor:
         self.frame_buffer = None
         self.joint_detector = JointDetector()
         self.audio_feedback = AudioFeedback()
-        self.rep_counter = RepCounterRelative(self.audio_feedback)
+        self.rep_counter = RepCounter(self.audio_feedback)
         self.posture_checker = PostureChecker(self.audio_feedback)
         self.selected_exercise = None
         self.start_tracking = False
@@ -69,7 +69,7 @@ class VideoProcessor:
         if self.selected_exercise == "Push-up":
             connections = [("ankle", "hip"), ("hip", "shoulder"), ("shoulder", "elbow")]
         else:
-            connections = [("knee", "hip"), ("hip", "shoulder"),("ankle", "knee") ]
+            connections = [("knee", "hip"), ("hip", "shoulder"),("ankle", "hip") ]
 
         for j1, j2 in connections:
             if j1 in joints and j2 in joints:
