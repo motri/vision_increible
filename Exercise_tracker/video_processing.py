@@ -5,7 +5,8 @@ from PIL import Image, ImageTk
 import tkinter as tk
 from joint_detection import JointDetector
 from audio_feedback import AudioFeedback
-from utils import calculate_angle
+from rep_counter import RepCounter
+from posture_checker import PostureChecker
 
 class VideoProcessor:
     def __init__(self):
@@ -14,9 +15,9 @@ class VideoProcessor:
         self.frame_buffer = None
         self.joint_detector = JointDetector()
         self.audio_feedback = AudioFeedback()
+        self.rep_counter = RepCounter(self.audio_feedback)
+        self.posture_checker = PostureChecker(self.audio_feedback)
         self.selected_exercise = None
-        self.rep_count = 0
-        self.at_bottom = False
         self.start_tracking = False
 
     def start_video_feed(self, canvas, selected_exercise, update_rep_count_callback):
@@ -76,58 +77,15 @@ class VideoProcessor:
         for joint, pos in joints.items():
             cv2.circle(frame, pos, 6, (0, 0, 255), -1)
 
+        # Initialize rep_count
+        rep_count = 0
+
         # Repetition detection logic using angles
         if self.start_tracking:
-            if self.selected_exercise == "Squat" and "knee" in joints and "hip" in joints and "shoulder" in joints:
-                angle = calculate_angle(joints["knee"], joints["hip"], joints["shoulder"])
-
-                # Bottom position detected (angle less than 90 degrees)
-                if angle < 90 and not self.at_bottom:
-                    self.at_bottom = True
-
-                # Top position detected (angle greater than 160 degrees)
-                elif angle > 160 and self.at_bottom:
-                    self.rep_count += 1
-                    self.audio_feedback.play_ping()
-                    self.at_bottom = False
-
-                # Check if shoulder moves away from hip
-                shoulder_hip_distance = np.linalg.norm(np.array(joints["shoulder"]) - np.array(joints["hip"]))
-                if shoulder_hip_distance > 100:  # Adjust the threshold as needed
-                    self.audio_feedback.play_back_straight()
-
-            elif self.selected_exercise == "Deadlift" and "knee" in joints and "hip" in joints and "shoulder" in joints:
-                angle = calculate_angle(joints["knee"], joints["hip"], joints["shoulder"])
-
-                # Bottom position detected (angle less than 90 degrees)
-                if angle < 90 and not self.at_bottom:
-                    self.at_bottom = True
-
-                # Top position detected (angle greater than 160 degrees)
-                elif angle > 160 and self.at_bottom:
-                    self.rep_count += 1
-                    self.audio_feedback.play_ping()
-                    self.at_bottom = False
-
-                # Check if distance between shoulder and hip reduces (curving of spine)
-                shoulder_hip_distance = np.linalg.norm(np.array(joints["shoulder"]) - np.array(joints["hip"]))
-                if shoulder_hip_distance < 50:  # Adjust the threshold as needed
-                    self.audio_feedback.play_back_straight()
-
-            elif self.selected_exercise == "Push-up" and "elbow" in joints and "shoulder" in joints and "hip" in joints:
-                angle = calculate_angle(joints["elbow"], joints["shoulder"], joints["hip"])
-
-                # Bottom position detected (angle less than 90 degrees)
-                if angle < 90 and not self.at_bottom:
-                    self.at_bottom = True
-
-                # Top position detected (angle greater than 160 degrees)
-                elif angle > 160 and self.at_bottom:
-                    self.rep_count += 1
-                    self.audio_feedback.play_ping()
-                    self.at_bottom = False
+            rep_count = self.rep_counter.count_reps(self.selected_exercise, joints)
+            self.posture_checker.check_posture(self.selected_exercise, joints)
 
         # Display rep count
-        cv2.putText(frame, f"Reps: {self.rep_count}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
-        self.update_rep_count_callback(self.rep_count)
+        cv2.putText(frame, f"Reps: {rep_count}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+        self.update_rep_count_callback(rep_count)
         return frame
