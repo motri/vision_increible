@@ -26,7 +26,7 @@ class ExerciseApp:
 
         # Initialize pygame mixer for audio
         pygame.mixer.init()
-        self.ping_sound = "Pushupsdefpruebas\msg_ping.mp3"
+        self.ping_sound = "msg\ping.mp3"
 
         self.color_ranges = {
             'ankle': ([24, 145, 70], [36, 255, 255]),        # Yellow
